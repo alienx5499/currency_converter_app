@@ -125,4 +125,19 @@ Refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file for more guidelines.
 
 ## **📜 License**
 
-This project is licensed under the MIT License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+
+### 📬 **Feedback & Suggestions**
+*We value your input! Share your thoughts through [GitHub Issues](https://github.com/alienx5499/smart-home-manager/issues).*
+
+
+🔗 **[Visit the Live Demo](#)** | 📑 **[Explore Documentation](#)** 
+
+---
+
+
+💡 *Let’s make global transactions seamless and effortless with our Currency Converter App!*
