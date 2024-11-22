@@ -34,7 +34,7 @@ The **Currency Converter App** is a Flutter-based application that provides real
 1. [✨ Features](#-features)
 2. [🛠️ Tech Stack](#-tech-stack)
 3. [📸 Screenshots](#-screenshots)
-4. [⚙️ Setup Instructions](#-setup-instructions)
+4. [⚙️ Setup Instructions](#️-setup-instructions)
 5. [🎯 Target Audience](#-target-audience)
 6. [🤝 Contributing](#-contributing)
 7. [📜 License](#-license)
