@@ -66,7 +66,10 @@ The **Currency Converter App** is a Flutter-based application that provides real
 
 ## **📸 Screenshots**
 
-*Screenshots coming soon! Stay tuned.*
+<div style="display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap;">
+  <img src="https://github.com/user-attachments/assets/14572591-ab48-4c51-9fbd-989511c36ea6" alt="Screenshot 2" style="width: 45%; border: 1px solid #ccc; border-radius: 8px;">
+  <img src="https://github.com/user-attachments/assets/f99be76c-c0f8-443d-9389-d111bb694019" alt="Screenshot 1" style="width: 45%; border: 1px solid #ccc; border-radius: 8px;">
+</div>
 
 ---
 
