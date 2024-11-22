@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-//Created by alienx99
+
 void main() {
   runApp(MyApp());
 }
@@ -11,96 +11,105 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Currency Converter',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: CurrencyConverterScreen(),
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: ThemeMode.system,
+      home: CurrencyConverter(),
     );
   }
 }
 
-class CurrencyConverterScreen extends StatefulWidget {
+class CurrencyConverter extends StatefulWidget {
   @override
-  _CurrencyConverterScreenState createState() =>
-      _CurrencyConverterScreenState();
+  _CurrencyConverterState createState() => _CurrencyConverterState();
 }
 
-class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
-  String? _fromCurrency = 'USD';
-  String? _toCurrency = 'INR';
-  TextEditingController _amountController = TextEditingController();
+class _CurrencyConverterState extends State<CurrencyConverter> {
+  String? from = 'USD';
+  String? to = 'INR';
+  TextEditingController amountCtrl = TextEditingController();
+  List<String> currencies = [];
+  double? result;
+  bool loading = false;
 
-  double? _convertedAmount;
-  bool _isLoading = false;
+  final String apiKey = '5de60fda21ba1f959c85332b';
+  final String apiBase = 'https://v6.exchangerate-api.com/v6';
 
-  // Replace with your API key
-  final String apiKey = 'b156727b27439b14ed0e627647c0a9c5';
-  final String apiBaseUrl = 'https://api.exchangerate.host/convert';
+  @override
+  void initState() {
+    super.initState();
+    loadCurrencies();
+  }
 
-  Future<double> fetchConversionRate(String from, String to) async {
-    final String apiKey = '2976ca78c69a7e7854c7e3a4';
-    final Uri apiUrl =
-    Uri.parse('https://v6.exchangerate-api.com/v6/$apiKey/latest/$from');
-
+  Future<void> loadCurrencies() async {
     try {
-      final response = await http.get(apiUrl);
+      final response = await http.get(Uri.parse('$apiBase/$apiKey/latest/USD'));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        if (data['result'] == 'success') {
-          return data['conversion_rates'][to];
-        } else {
-          throw Exception('Error from API: ${data['error-type']}');
-        }
+        setState(() {
+          currencies = (data['conversion_rates'] as Map<String, dynamic>)
+              .keys
+              .toList();
+        });
       } else {
-        throw Exception(
-            'Failed to fetch conversion rate. Status: ${response.statusCode}');
+        showError('Failed to load currencies');
       }
     } catch (e) {
-      throw Exception('Error fetching conversion rate: $e');
+      showError('Something went wrong: $e');
     }
   }
 
-  void _convertCurrency() async {
-    if (_amountController.text.isEmpty ||
-        double.tryParse(_amountController.text) == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please enter a valid number.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+  Future<double> fetchRate(String from, String to) async {
+    final url = Uri.parse('$apiBase/$apiKey/latest/$from');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['conversion_rates'][to];
+    } else {
+      throw Exception('Failed to load rate');
+    }
+  }
+
+  void convert() async {
+    if (amountCtrl.text.isEmpty ||
+        double.tryParse(amountCtrl.text) == null) {
+      showError('Enter a valid number');
       return;
     }
 
     setState(() {
-      _isLoading = true;
+      loading = true;
     });
 
     try {
-      double rate = await fetchConversionRate(_fromCurrency!, _toCurrency!);
+      final rate = await fetchRate(from!, to!);
       setState(() {
-        _convertedAmount = double.parse(_amountController.text) * rate;
-        _isLoading = false;
+        result = double.parse(amountCtrl.text) * rate;
+        loading = false;
       });
     } catch (e) {
+      showError('Failed to convert: $e');
       setState(() {
-        _isLoading = false;
+        loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: Unable to fetch conversion rate.'),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
 
-  void _swapCurrencies() {
+  void swap() {
     setState(() {
-      final temp = _fromCurrency;
-      _fromCurrency = _toCurrency;
-      _toCurrency = temp;
+      final temp = from;
+      from = to;
+      to = temp;
     });
+  }
+
+  void showError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 
   @override
@@ -110,15 +119,16 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
         title: Text('Currency Converter'),
         centerTitle: true,
       ),
-      body: Padding(
+      body: currencies.isEmpty
+          ? Center(child: CircularProgressIndicator())
+          : Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
-              controller: _amountController,
+              controller: amountCtrl,
               decoration: InputDecoration(
-                labelText: 'Amount in $_fromCurrency',
+                labelText: 'Amount in $from',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.attach_money),
               ),
@@ -129,22 +139,16 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _fromCurrency,
-                    items: ['USD', 'EUR', 'INR', 'GBP'].map((String value) {
+                    value: from,
+                    items: currencies.map((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
-                        child: Row(
-                          children: [
-                            Icon(Icons.flag),
-                            SizedBox(width: 8),
-                            Text(value),
-                          ],
-                        ),
+                        child: Text(value),
                       );
                     }).toList(),
                     onChanged: (newValue) {
                       setState(() {
-                        _fromCurrency = newValue;
+                        from = newValue;
                       });
                     },
                     decoration: InputDecoration(
@@ -156,27 +160,21 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                 SizedBox(width: 16),
                 IconButton(
                   icon: Icon(Icons.swap_horiz, size: 30, color: Colors.blue),
-                  onPressed: _swapCurrencies,
+                  onPressed: swap,
                 ),
                 SizedBox(width: 16),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _toCurrency,
-                    items: ['USD', 'EUR', 'INR', 'GBP'].map((String value) {
+                    value: to,
+                    items: currencies.map((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
-                        child: Row(
-                          children: [
-                            Icon(Icons.flag),
-                            SizedBox(width: 8),
-                            Text(value),
-                          ],
-                        ),
+                        child: Text(value),
                       );
                     }).toList(),
                     onChanged: (newValue) {
                       setState(() {
-                        _toCurrency = newValue;
+                        to = newValue;
                       });
                     },
                     decoration: InputDecoration(
@@ -191,8 +189,8 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _isLoading ? null : _convertCurrency,
-                child: _isLoading
+                onPressed: loading ? null : convert,
+                child: loading
                     ? CircularProgressIndicator(
                   color: Colors.white,
                 )
@@ -200,7 +198,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
               ),
             ),
             SizedBox(height: 20),
-            if (_convertedAmount != null)
+            if (result != null)
               Center(
                 child: Container(
                   padding: EdgeInsets.all(16),
@@ -221,7 +219,7 @@ class _CurrencyConverterScreenState extends State<CurrencyConverterScreen> {
                       ),
                       SizedBox(height: 8),
                       Text(
-                        '${_convertedAmount!.toStringAsFixed(2)} $_toCurrency',
+                        '${result!.toStringAsFixed(2)} $to',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
