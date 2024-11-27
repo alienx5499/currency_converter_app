@@ -123,6 +123,19 @@ Refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file for more guidelines.
 
 ---
 
+## <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f31f/512.webp" width="35" height="30"> Awesome Contributors
+
+<div align="center">
+	<h3>Thank you for contributing to our repository</h3><br>
+	<p align="center">
+		<a href="https://github.com/alienx5499/currency_converter_app/contributors">
+			<img src="https://contrib.rocks/image?repo=alienx5499/currency_converter_app" width="90" height="45" />
+		</a>
+	</p>
+</div>
+
+---
+
 ## **📜 License**
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
